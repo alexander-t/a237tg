@@ -1,6 +1,26 @@
 import unittest
 
-from trafikdataanalys import *
+from uppgift1_4 import *
+
+class TestUppgift1(unittest.TestCase):
+    def test_medeltal_av_ett_tal(self):
+        self.assertEqual(5, mean_value([5]))
+
+    def test_medeltal_av_två_tal(self):
+        self.assertEqual(5.0, mean_value([9.99, 0.01]))
+
+    def test_min_lista(self):
+        self.assertEqual(-99.3, min_value([0, 1, -3.4, 17, 44.4, -99.3, -5]))
+
+    def test_min_ett_tal(self):
+            self.assertEqual(3, min_value([3]))
+
+    def test_max_lista(self):
+        self.assertEqual(44.4, max_value([0, 1, -3.4, 17, 44.4, -99.3, -5]))
+
+    def test_max_ett_tal(self):
+        self.assertEqual(3, max_value([3]))
+
 
 
 class TestUppgift3(unittest.TestCase):
