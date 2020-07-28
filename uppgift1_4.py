@@ -136,7 +136,7 @@ if trafik_data:
             nuvarande_år = rad[0]
             årsgruppering = Årsgruppering(nuvarande_år)
         årsgruppering.lägg_till_kvartalsrad(rad)
-
+    analyserad_data.append(årsgruppering.aggregera())
 
 # Deluppgift 4:
 # -------------
