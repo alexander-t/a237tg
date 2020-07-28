@@ -53,28 +53,38 @@ with open('trafikdata.csv') as file:
 # Skriv koden här:
 import re
 
-ANTAL_DATAKOLUMNER = 6
 KVARTAL_PER_ÅR = 4
+
+# Kolumner i filen
 OFFSET_ÅR = 0
 OFFSET_KVARTAL = 1
+OFFSET_TOTAL = 2
+OFFSET_GENOMSNITTLIG_FÖRSENING = 3
+OFFSET_FÖRSENADE = 4
+OFFSET_FÖRSENADE_MINST_5 = 5
+
+ANTAL_DATAKOLUMNER = 6
+
 
 class Årsgruppering:
     """
     Håller ihop data för ett år och möjliggör aggregering.
     """
+
     def __init__(self, år):
         # Enkel sanity check för årtal som placerar oss kring relevant tidsperiod
         if not re.match(r"^(19\d{2}|2\d{3})$", år):
             raise ValueError(f"Ogiltigt år: {år}")
         self.år = år
         self.total_försening = 0
-        self.snitt_försening_samtliga = []
-        self.snitt_försening_försenade = []
-        self.snitt_försening_minfemplus = []
+        self.förseningar_samtliga = []
+        self.förseningar_försenade = []
+        self.förseningar_minst_fem_plus = []
 
     def lägg_till_kvartalsrad(self, rad):
         """Lägger till en rad innehållande data för ett kvartal. Gör grundläggande, men ej uttömmande,
-        sanity checks på raden, eftersom den inte är typad på något sätt.
+        sanity checks på raden, eftersom den inte är typad på något sätt. Emedan kursen inte ställer krav på
+        avancerad felhantering, så görs här simplistisk felhantering.
         """
 
         if len(rad) != ANTAL_DATAKOLUMNER:
@@ -87,32 +97,32 @@ class Årsgruppering:
             if not rad[kolumn].isnumeric():
                 raise ValueError(f"Värdet i kolumn {kolumn} förväntas vara numeriskt; var {rad[kolumn]}")
 
-        # Här vet ma de facto inte om minuterna alltid är heltal, men de är det i den fil vi använder...
-        self.total_försening += int(rad[2])
-        self.snitt_försening_samtliga.append(int(rad[3]))
-        self.snitt_försening_försenade.append(int(rad[4]))
-        self.snitt_försening_minfemplus.append(int(rad[5]))
+        # Här vet man de facto inte om minuterna alltid är heltal, men de är det i den fil vi använder.
+        self.total_försening += int(rad[OFFSET_TOTAL])
+        self.förseningar_samtliga.append(int(rad[OFFSET_GENOMSNITTLIG_FÖRSENING]))
+        self.förseningar_försenade.append(int(rad[OFFSET_FÖRSENADE]))
+        self.förseningar_minst_fem_plus.append(int(rad[OFFSET_FÖRSENADE_MINST_5]))
 
     def aggregera(self):
-        """ Aggregerar årsdatat till en lista innehållande medel, min och max för de olika föresningstyperna. """
+        """ Aggregerar årsdatat till en lista innehållande medel, min och max för de olika förseningstyperna. """
 
-        # Ja, den här kollen är lite simplistisk, men vi verkar inte prata så mycket felhantering i kursen.
-        if len(self.snitt_försening_samtliga) != KVARTAL_PER_ÅR:
+        # Ja, den här kollen är lite trivial, men enkel fehnatering var det...
+        if len(self.förseningar_samtliga) != KVARTAL_PER_ÅR:
             raise RuntimeError("Kan inte aggregera, eftersom grupperingen inte innehåller fyra kvartal")
 
         # Gör allt till floats redan här för att passa det angivna utskriftsformatet
         return [
             self.år,
             float(self.total_försening),
-            float(mean_value(self.snitt_försening_samtliga)),
-            float(min_value(self.snitt_försening_samtliga)),
-            float(max_value(self.snitt_försening_samtliga)),
-            float(mean_value(self.snitt_försening_försenade)),
-            float(min_value(self.snitt_försening_försenade)),
-            float(max_value(self.snitt_försening_försenade)),
-            float(mean_value(self.snitt_försening_minfemplus)),
-            float(min_value(self.snitt_försening_minfemplus)),
-            float(max_value(self.snitt_försening_minfemplus))
+            float(mean_value(self.förseningar_samtliga)),
+            float(min_value(self.förseningar_samtliga)),
+            float(max_value(self.förseningar_samtliga)),
+            float(mean_value(self.förseningar_försenade)),
+            float(min_value(self.förseningar_försenade)),
+            float(max_value(self.förseningar_försenade)),
+            float(mean_value(self.förseningar_minst_fem_plus)),
+            float(min_value(self.förseningar_minst_fem_plus)),
+            float(max_value(self.förseningar_minst_fem_plus))
         ]
 
 
@@ -144,6 +154,7 @@ def formatera_förseningssektion(rubrik, data, startkolumn):
         sektion += f"{årsdata[0]:8}{årsdata[startkolumn]:<24}{årsdata[startkolumn + 1]:<24}{årsdata[startkolumn + 2]:<24}\n"
     return sektion
 
+
 def resultat_tabell(analyserad_data):
     tabell = """
 ************************************** R E S U L T A T **************************************
@@ -162,5 +173,5 @@ Total försening alla tåg [h]
     tabell += "\n" + ("*" * 92)
     return tabell
 
-print(resultat_tabell(analyserad_data))
 
+print(resultat_tabell(analyserad_data))
