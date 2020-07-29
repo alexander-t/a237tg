@@ -125,9 +125,11 @@ class Årsgruppering:
             float(max_value(self.förseningar_minst_fem_plus))
         ]
 
+def analysera_data(trafik_data):
+    if not trafik_data:
+        raise ValueError("Ingen data att analysera!")
 
-analyserad_data = []
-if trafik_data:
+    analyserad_data = []
     nuvarande_år = trafik_data[0][0]
     årsgruppering = Årsgruppering(nuvarande_år)
     for rad in trafik_data:
@@ -137,6 +139,10 @@ if trafik_data:
             årsgruppering = Årsgruppering(nuvarande_år)
         årsgruppering.lägg_till_kvartalsrad(rad)
     analyserad_data.append(årsgruppering.aggregera())
+
+    return analyserad_data
+
+analyserad_data = analysera_data(trafik_data)
 
 # Deluppgift 4:
 # -------------
